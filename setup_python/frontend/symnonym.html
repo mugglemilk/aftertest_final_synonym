@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คำพ้องความหมาย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../static/synonym.css">
+</head>
+<body>
+<nav class="navbar"> <!--คลาสโลโก้-->
+  <a class="nav-brand" href="/">พ้องความหมาย</a>
+  <div class="nav-links">
+    <a href="/" class="nav-link active">ค้นหาคำพ้อง</a>
+    <a href="/dictionary" class="nav-link">ตารางแสดงคำศัพท์</a>
+    <a href="/poem" class="nav-link">แต่งกลอนแปด</a>
+  </div>
+  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()"> <!--ปุ่มโหมด-->
+    <span id="themeIcon">☀</span><span id="themeLabel">โหมดสว่าง</span>
+  </button>
+</nav>
+<div class="hero">
+  <div class="avatar">
+    <span class="avatar-title">พ้อง</span>
+    <span class="avatar-sub">ความหมาย</span>
+  </div>
+
+  <div class="nav-btns">
+    <a class="nav-pill" href="/dictionary">
+      <svg 
+          width="15" 
+          height="15" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          stroke-width="2" 
+          stroke-linecap="round" 
+          stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      ตารางแสดงคำศัพท์
+    </a>
+    <a class="nav-pill" href="/poem">
+      <svg 
+          width="15" 
+          height="15" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          stroke-width="2" 
+          stroke-linecap="round" 
+          stroke-linejoin="round">
+          <path d="M12 20h9"/>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+      แต่งกลอนแปด
+    </a>
+  </div>
+  <div class="search-wrap">
+    <input class="search-input" id="wordInput" type="text"
+      placeholder="พิมพ์คำที่ค้นหาที่นี่ . . ." autocomplete="off" />
+    <span class="search-icon">⌕</span>
+  </div>
+  <p class="search-hint" id="hint">คลิกที่ข้อความเพื่อคัดลอก</p>
+
+  <div class="results" id="results"></div>
+</div>
+<script>
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const dark = t === 'dark';
+  document.getElementById('themeIcon').textContent  = dark ? '☀' : '🌙';
+  document.getElementById('themeLabel').textContent = dark ? 'โหมดสว่าง' : 'โหมดมืด';
+  localStorage.setItem('thai-theme', t);
+}
+function toggleTheme() {
+  applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+applyTheme(localStorage.getItem('thai-theme') || 'dark');
+
+let timer;
+const input   = document.getElementById('wordInput');
+const results = document.getElementById('results');
+const hint    = document.getElementById('hint');
+
+function lookup(word) {
+  word = word.trim();
+  if (!word) { results.innerHTML = ''; hint.textContent = 'คลิกที่ข้อความเพื่อคัดลอก'; return; }
+  hint.textContent = 'กำลังค้นหา…';
+  fetch(`/api/synonym?word=${encodeURIComponent(word)}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.error || !data.synonyms?.length) {
+        results.innerHTML = `<div class="empty-msg">ไม่พบคำพ้องสำหรับ "<strong>${word}</strong>"</div>`;
+        hint.textContent = '';
+        return;
+      }
+      hint.textContent = 'คลิกที่คำเพื่อคัดลอก';
+      results.innerHTML =
+        `<div class="result-header">คำพ้องของ <strong>${data.word}</strong> — ${data.synonyms.length} คำ</div>` +
+        `<div class="tags">${data.synonyms.map(s =>
+          `<span class="tag" onclick="copyTag(this,'${s.replace(/'/g,"&#39;")}')">${s}</span>`
+        ).join('')}</div>`;
+    })
+    .catch(() => {
+      results.innerHTML = `<div class="empty-msg" style="color:var(--err)">เชื่อมต่อ API ไม่ได้</div>`;
+      hint.textContent = '';
+    });
+}
+function copyTag(el, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    el.classList.add('copied');
+    setTimeout(() => el.classList.remove('copied'), 900);
+  });
+}
+input.addEventListener('input',   () => { clearTimeout(timer); timer = setTimeout(() => lookup(input.value), 300); });
+input.addEventListener('keydown', e => { if (e.key === 'Enter') { clearTimeout(timer); lookup(input.value); } });
+</script>
+</body>
+</html>
