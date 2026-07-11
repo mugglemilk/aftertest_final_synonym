@@ -18,7 +18,15 @@ def get_synonym():
 def get_dictionary():
     service = current_app.config['SYNONYM_SERVICE']
     data = service._repo.get_all()
-    entries = [{"word": w, "synonyms": syns} for w, syns in sorted(data.items())]
+
+    entries = [
+        {
+            "word": w,
+            "synonyms": syns[:]   # เอาแค่ 2 คำแรก
+        }
+        for w, syns in sorted(data.items())[:] # [:500]
+    ]
+
     return jsonify(entries)
 
 

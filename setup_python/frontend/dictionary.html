@@ -1,26 +1,8 @@
-<!DOCTYPE html>
-<html lang="th" data-theme="dark">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ตารางแสดงคำศัพท์</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../static/synonym.css">
-</head>
-<body class="page-dict">
-<nav class="navbar">
-  <a class="nav-brand" href="/">พ้องความหมาย</a>
-  <div class="nav-links">
-    <a href="/" class="nav-link">ค้นหาคำพ้อง</a>
-    <a href="/dictionary" class="nav-link active">ตารางแสดงคำศัพท์</a>
-    <a href="/poem" class="nav-link">แต่งกลอนแปด</a>
-  </div>
-  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">
-    <span id="themeIcon">☀</span><span id="themeLabel">โหมดสว่าง</span>
-  </button>
-</nav>
+{% extends "base.html" %}
+
+{% block title %}ตารางแสดงคำศัพท์{% endblock %}
+{% block active_dict %}active{% endblock %}
+{% block content %}
 
 <div class="page">
   <div class="page-header">
@@ -57,7 +39,8 @@
     </table>
   </div>
 </div>
-
+{% endblock %}
+{% block scripts %}
 <script>
 function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
@@ -150,5 +133,4 @@ fetch('/api/dictionary')
       `<tr><td colspan="2"><div class="placeholder" style="color:var(--err)">โหลดข้อมูลไม่ได้: ${err.message}</div></td></tr>`;
   });
 </script>
-</body>
-</html>
+{% endblock %}
