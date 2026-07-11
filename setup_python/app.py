@@ -1,15 +1,13 @@
-from flask import Flask, send_from_directory
+from flask import Flask, render_template  # 1. นำเข้า render_template แทน send_from_directory
 import os
 from api.synonym.repository import SynonymRepository
 from api.synonym.service import SynonymService
 from api.synonym.routes import bp as synonym_bp
 from api.poem.routes import bp as poem_bp
 
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), 'frontend')
-
-
 def create_app():
-    app = Flask(__name__)
+    # 2. ใส่ template_folder='frontend' ไว้ตรงนี้ เพื่อบอกตำแหน่งโฟลเดอร์ให้ Flask รู้จัก
+    app = Flask(__name__, template_folder='frontend')
 
     repo = SynonymRepository()
     app.config['SYNONYM_SERVICE'] = SynonymService(repo)
@@ -19,15 +17,16 @@ def create_app():
 
     @app.route('/')
     def home():
-        return send_from_directory(FRONTEND_DIR, 'symnonym.html')
+        # 3. ใช้ render_template เรียกชื่อไฟล์ได้เลย ไม่ต้องใช้ os.path.join หรือ send_from_directory แล้ว
+        return render_template('symnonym.html')
 
     @app.route('/dictionary')
     def dictionary():
-        return send_from_directory(FRONTEND_DIR, 'dictionary.html')
+        return render_template('dictionary.html')
 
     @app.route('/poem')
     def poem():
-        return send_from_directory(FRONTEND_DIR, 'poem.html')
+        return render_template('poem.html')
 
     return app
 
